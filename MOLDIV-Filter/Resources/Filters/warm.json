@@ -1,0 +1,12 @@
+
+{
+  "id": "warm",
+  "name": "Warm",
+  "shader": "warm_filter",
+  "thumbnail": "warm_thumb",
+  "parameters": {
+    "redBoost": 0.15,
+    "blueReduce": -0.1,
+    "saturation": 1.2
+  }
+}

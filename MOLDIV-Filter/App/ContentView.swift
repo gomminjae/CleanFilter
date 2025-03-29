@@ -8,8 +8,11 @@
 import SwiftUI
 
 struct ContentView: View {
+    
+    @StateObject private var viewModel = DIContainer().makeEditorViewModel()
+    
     var body: some View {
-        EditorView()
+        EditorView(viewModel: viewModel)
     }
 }
 

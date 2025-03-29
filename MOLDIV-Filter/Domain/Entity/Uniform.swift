@@ -7,8 +7,6 @@
 
 import Foundation
 
-
-
 struct FilterUniform {
     var redBoost: Float
     var blueReduce: Float
