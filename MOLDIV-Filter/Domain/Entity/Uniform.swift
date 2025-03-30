@@ -8,7 +8,9 @@
 import Foundation
 
 struct FilterUniform {
-    var redBoost: Float
-    var blueReduce: Float
+    var redBoost: Float   // warm용
+    var greenBoost: Float // cool용
+    var blueBoost: Float  // cool용
+    var blueReduce: Float // warm용
     var saturation: Float
 }

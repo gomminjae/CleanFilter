@@ -19,6 +19,9 @@ enum MetalInitError: Error {
     case commandQueueUnvailable
 }
 
+
+
+
 public enum MetalFilterError: Error, LocalizedError, Equatable {
     case invalidInputImage
     case textureLoadingFailed
@@ -109,8 +112,9 @@ final class FilterProcessor: ImageFiltering {
         }
 
         // 6. Uniforms 바인딩
-        var bufferData = MetalUniformBufferBuilder.build(from: filter.parameters)
-
+        var bufferData = MetalUniformBufferBuilder.build(from: filter.parameters, shader: filter.shader)
+        print("Uniform:", bufferData)
+        
         encoder.setComputePipelineState(pipeline)
         encoder.setTexture(inputTexture, index: 0)
         encoder.setTexture(outputTexture, index: 1)
@@ -118,12 +122,17 @@ final class FilterProcessor: ImageFiltering {
 
         // 7. 스레드 디스패치
         let w = pipeline.threadExecutionWidth
-        let h = pipeline.maxTotalThreadsPerThreadgroup / w
-        encoder.dispatchThreads(
-            MTLSize(width: inputTexture.width, height: inputTexture.height, depth: 1),
-            threadsPerThreadgroup: MTLSize(width: w, height: h, depth: 1)
+        let h = max(1, pipeline.maxTotalThreadsPerThreadgroup / w)
+
+        let threadsPerThreadgroup = MTLSize(width: w, height: h, depth: 1)
+
+        let threadgroupsPerGrid = MTLSize(
+            width: (inputTexture.width + w - 1) / w,
+            height: (inputTexture.height + h - 1) / h,
+            depth: 1
         )
 
+        encoder.dispatchThreadgroups(threadgroupsPerGrid, threadsPerThreadgroup: threadsPerThreadgroup)
         encoder.endEncoding()
         commandBuffer.commit()
         commandBuffer.waitUntilCompleted()

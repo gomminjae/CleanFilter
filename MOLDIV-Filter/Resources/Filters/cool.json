@@ -2,8 +2,8 @@
 {
   "id": "coor",
   "name": "Cool",
-  "shader": "coor_filter",
-  "thumbnail": "coor_thumb",
+  "shader": "cool_filter",
+  "thumbnail": "cool_thumb",
   "parameters": {
     "greenBoost": 0.2,
     "blueBoost": 0.25,

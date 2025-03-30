@@ -5,9 +5,11 @@
 //  Created by 권민재 on 3/28/25.
 //
 import SwiftUI
+import PhotosUI
 
 struct EditorView: View {
     @StateObject var viewModel: EditorViewModel
+    @State private var selectedItem: PhotosPickerItem?
 
     var body: some View {
         VStack {
@@ -19,8 +21,15 @@ struct EditorView: View {
                         .resizable()
                         .scaledToFit()
                 } else {
-                    Text("이미지를 불러오는 중...")
-                        .foregroundColor(.gray)
+                    VStack(spacing: 16) {
+                        PhotosPicker(selection: $selectedItem, matching: .images) {
+                            Text("이미지 추가")
+                                .padding()
+                                .background(Color.blue)
+                                .foregroundColor(.white)
+                                .cornerRadius(8)
+                        }
+                    }
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: 400)
@@ -35,7 +44,7 @@ struct EditorView: View {
                             Rectangle()
                                 .fill(Color.gray.opacity(0.2))
                                 .frame(width: 60, height: 60)
-                                .overlay(Text(filter.name.prefix(1)).font(.title)) // 임시 썸네일 대체
+                                .overlay(Text(filter.name.prefix(1)).font(.title)) 
 
                             Text(filter.name)
                                 .font(.caption)
@@ -56,6 +65,15 @@ struct EditorView: View {
         }
         .onAppear {
             viewModel.loadFilters()
+        }
+        .onChange(of: selectedItem) {
+            guard let item = selectedItem else { return }
+            Task {
+                if let data = try? await item.loadTransferable(type: Data.self),
+                   let image = UIImage(data: data) {
+                    viewModel.setOriginalImage(image)
+                }
+            }
         }
     }
 }

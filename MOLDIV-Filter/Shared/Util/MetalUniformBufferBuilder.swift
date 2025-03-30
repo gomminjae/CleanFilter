@@ -8,10 +8,23 @@
 
 import Foundation
 
-struct MetalUniformBufferBuilder {
-    static func build(from parameters: [String: Float]) -> [Float] {
-        // 파라미터를 알파벳 순서로 정렬하여 항상 동일한 순서 보장
-        let sortedKeys = parameters.keys.sorted()
-        return sortedKeys.map { parameters[$0] ?? 0 }
+enum MetalUniformBufferBuilder {
+    static func build(from parameters: [String: Float], shader: String) -> [Float] {
+        switch shader {
+        case "warm_filter":
+            return [
+                parameters["redBoost"] ?? 0,
+                parameters["blueReduce"] ?? 0,
+                parameters["saturation"] ?? 1
+            ]
+        case "cool_filter":
+            return [
+                parameters["greenBoost"] ?? 0,
+                parameters["blueBoost"] ?? 0,
+                parameters["saturation"] ?? 1
+            ]
+        default:
+            return []
+        }
     }
 }
