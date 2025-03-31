@@ -4,54 +4,64 @@
 //
 //  Created by 권민재 on 3/28/25.
 //
+
 import SwiftUI
 import PhotosUI
 
 struct EditorView: View {
     @StateObject var viewModel: EditorViewModel
     @State private var selectedItem: PhotosPickerItem?
-
+    
     var body: some View {
         VStack {
-            Spacer()
-
+            // 이미지 뷰
             Group {
                 if let image = viewModel.filteredImage {
                     Image(uiImage: image)
                         .resizable()
-                        .scaledToFit()
+                        .scaledToFill()
+                        .frame(maxWidth: .infinity, maxHeight: 400)
+                        .clipped() // ← 중요: 잘린 부분 자르기
                 } else {
-                    VStack(spacing: 16) {
-                        PhotosPicker(selection: $selectedItem, matching: .images) {
-                            Text("이미지 추가")
-                                .padding()
-                                .background(Color.blue)
-                                .foregroundColor(.white)
-                                .cornerRadius(8)
-                        }
+                    PhotosPicker(selection: $selectedItem, matching: .images) {
+                        Text("이미지 추가")
+                            .padding()
+                            .background(Color.blue)
+                            .foregroundColor(.white)
+                            .cornerRadius(8)
                     }
                 }
             }
-            .frame(maxWidth: .infinity, maxHeight: 400)
+            .frame(maxHeight: 400)
             .background(Color.black)
             .padding()
 
-            // 필터 선택 바
+            // 필터 썸네일 바
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 16) {
+                HStack(spacing: 12) {
                     ForEach(viewModel.filterList, id: \.id) { filter in
                         VStack {
-                            Rectangle()
-                                .fill(Color.gray.opacity(0.2))
-                                .frame(width: 60, height: 60)
-                                .overlay(Text(filter.name.prefix(1)).font(.title)) 
+                            if let preview = viewModel.filterThumbnails[filter.id] {
+                                Image(uiImage: preview)
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 60, height: 60)
+                                    .clipped()
+                                    .cornerRadius(8)
+                            } else {
+                                Rectangle()
+                                    .fill(Color.gray.opacity(0.2))
+                                    .frame(width: 60, height: 60)
+                                    .cornerRadius(8)
+                                    .overlay(Text(filter.name.prefix(1)))
+                            }
 
                             Text(filter.name)
-                                .font(.caption)
+                                .font(.caption2)
                                 .foregroundColor(viewModel.selectedFilter?.id == filter.id ? .blue : .primary)
                         }
-                        .padding(8)
-                        .background(viewModel.selectedFilter?.id == filter.id ? Color.blue.opacity(0.1) : Color.clear)
+                        .padding(4)
+                        .background(viewModel.selectedFilter?.id == filter.id ? Color.blue.opacity(0.15) : Color.clear)
                         .cornerRadius(8)
                         .onTapGesture {
                             viewModel.selectFilter(filter)
@@ -60,7 +70,6 @@ struct EditorView: View {
                 }
                 .padding(.horizontal)
             }
-
             Spacer()
         }
         .onAppear {

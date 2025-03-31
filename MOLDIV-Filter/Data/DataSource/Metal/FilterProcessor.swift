@@ -18,10 +18,6 @@ enum MetalInitError: Error {
     case deviceUnvailable
     case commandQueueUnvailable
 }
-
-
-
-
 public enum MetalFilterError: Error, LocalizedError, Equatable {
     case invalidInputImage
     case textureLoadingFailed
@@ -53,7 +49,6 @@ public enum MetalFilterError: Error, LocalizedError, Equatable {
         }
     }
 }
-
 final class FilterProcessor: ImageFiltering {
     
     private let device: MTLDevice
@@ -68,12 +63,12 @@ final class FilterProcessor: ImageFiltering {
         self.commandQueue = queue
     }
     func apply(filter: FilterConfig, to image: UIImage) throws -> UIImage {
-        // 1. 입력 이미지 확인
+        
+        
         guard let cgImage = image.cgImage else {
             throw MetalFilterError.invalidInputImage
         }
 
-        // 2. 입력 텍스처 생성
         let loader = MTKTextureLoader(device: device)
         let inputTexture: MTLTexture
         do {
@@ -82,7 +77,7 @@ final class FilterProcessor: ImageFiltering {
             throw MetalFilterError.textureLoadingFailed
         }
 
-        // 3. 출력 텍스처 생성
+       
         let descriptor = MTLTextureDescriptor.texture2DDescriptor(
             pixelFormat: .rgba8Unorm,
             width: inputTexture.width,
@@ -95,7 +90,7 @@ final class FilterProcessor: ImageFiltering {
             throw MetalFilterError.outputTextureCreationFailed
         }
 
-        // 4. 셰이더, 파이프라인 준비
+       
         guard let library = device.makeDefaultLibrary(),
               let function = library.makeFunction(name: filter.shader) else {
             throw MetalFilterError.shaderFunctionNotFound(name: filter.shader)
@@ -105,13 +100,13 @@ final class FilterProcessor: ImageFiltering {
             throw MetalFilterError.pipelineStateCreationFailed
         }
 
-        // 5. 커맨드 구성
+        
         guard let commandBuffer = commandQueue.makeCommandBuffer(),
               let encoder = commandBuffer.makeComputeCommandEncoder() else {
             throw MetalFilterError.encodingFailed
         }
 
-        // 6. Uniforms 바인딩
+       
         var bufferData = MetalUniformBufferBuilder.build(from: filter.parameters, shader: filter.shader)
         print("Uniform:", bufferData)
         
@@ -120,7 +115,7 @@ final class FilterProcessor: ImageFiltering {
         encoder.setTexture(outputTexture, index: 1)
         encoder.setBytes(&bufferData, length: bufferData.count * MemoryLayout<Float>.stride, index: 0)
 
-        // 7. 스레드 디스패치
+
         let w = pipeline.threadExecutionWidth
         let h = max(1, pipeline.maxTotalThreadsPerThreadgroup / w)
 
@@ -137,16 +132,19 @@ final class FilterProcessor: ImageFiltering {
         commandBuffer.commit()
         commandBuffer.waitUntilCompleted()
 
-        // 8. 결과 이미지 변환
-        guard let ciImage = CIImage(mtlTexture: outputTexture, options: nil) else {
+        guard var ciImage = CIImage(mtlTexture: outputTexture, options: nil) else {
             throw MetalFilterError.imageConversionFailed
         }
-
+        
+        let flippedTransform = CGAffineTransform(scaleX: 1, y: -1)
+            .translatedBy(x: 0, y: -ciImage.extent.height)
+        ciImage = ciImage.transformed(by: flippedTransform)
+        
         let context = CIContext()
         guard let resultCG = context.createCGImage(ciImage, from: ciImage.extent) else {
             throw MetalFilterError.imageConversionFailed
         }
-
+        
         return UIImage(cgImage: resultCG)
     }
 

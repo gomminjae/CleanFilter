@@ -13,4 +13,8 @@ struct FilterUniform {
     var blueBoost: Float  // cool용
     var blueReduce: Float // warm용
     var saturation: Float
+    var sepiaStrength: Float
+    var brightness: Float
+    var contrast: Float
+    
 }
