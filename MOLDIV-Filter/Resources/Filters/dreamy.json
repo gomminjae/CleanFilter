@@ -1,0 +1,13 @@
+
+{
+  "id": "dreamy",
+  "name": "Dreamy",
+  "shader": "dreamy_filter",
+  "thumbnail": "dreamy_thumb",
+  "parameters": {
+    "brightness": 0.1,
+    "saturation": 0.85,
+    "contrast": 0.8,
+    "blueBoost": 0.05
+  }
+}

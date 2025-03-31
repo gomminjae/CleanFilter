@@ -1,0 +1,12 @@
+
+{
+  "id": "coor",
+  "name": "Cool",
+  "shader": "cool_filter",
+  "thumbnail": "cool_thumb",
+  "parameters": {
+    "greenBoost": 0.2,
+    "blueBoost": 0.25,
+    "saturation": 0.9
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "id": "vintage",
+  "name": "Vintage",
+  "shader": "vintage_filter",
+  "thumbnail": "vintage_thumb",
+  "parameters": {
+    "sepiaStrength": 0.6,
+    "brightness": -0.05,
+    "contrast": 0.85
+  }
+}
