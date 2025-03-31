@@ -65,7 +65,9 @@ final class FilterProcessor: ImageFiltering {
     func apply(filter: FilterConfig, to image: UIImage) throws -> UIImage {
         
         
-        guard let cgImage = image.cgImage else {
+        let normalized = image.normalized()
+        
+        guard let cgImage = normalized.cgImage ?? CIContext().createCGImage(CIImage(image: image)!, from: CIImage(image: image)!.extent) else {
             throw MetalFilterError.invalidInputImage
         }
 

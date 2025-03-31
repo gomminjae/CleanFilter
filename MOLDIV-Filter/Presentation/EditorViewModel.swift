@@ -10,21 +10,48 @@ import UIKit
 
 
 extension UIImage {
+    
+    func toSRGBCompatible() -> UIImage {
+            let format = UIGraphicsImageRendererFormat()
+            format.scale = 1
+            format.opaque = false
+            format.preferredRange = .standard  // ← ✅ sRGB 강제
+
+            let renderer = UIGraphicsImageRenderer(size: self.size, format: format)
+            let rendered = renderer.image { _ in
+                self.draw(in: CGRect(origin: .zero, size: self.size))
+            }
+
+            guard let cg = rendered.cgImage else {
+                fatalError("❌ SRGB 변환 실패")
+            }
+            return UIImage(cgImage: cg)
+        }
+    func normalized() -> UIImage {
+            if self.imageOrientation == .up { return self }
+            
+            UIGraphicsBeginImageContextWithOptions(self.size, false, self.scale)
+            self.draw(in: CGRect(origin: .zero, size: self.size))
+            let result = UIGraphicsGetImageFromCurrentImageContext()!
+            UIGraphicsEndImageContext()
+            return result
+        }
     func resize(to targetSize: CGSize) -> UIImage {
         let renderer = UIGraphicsImageRenderer(size: targetSize)
         let image = renderer.image { _ in
             self.draw(in: CGRect(origin: .zero, size: targetSize))
         }
-
-        // ⛑️ CGImage가 없다면 CIImage → CGImage로 강제 생성
-        if image.cgImage == nil, let ciImage = image.ciImage {
+        
+        if let cg = image.cgImage {
+            return UIImage(cgImage: cg)
+        } else if let ci = image.ciImage {
             let context = CIContext()
-            if let cg = context.createCGImage(ciImage, from: ciImage.extent) {
+            if let cg = context.createCGImage(ci, from: ci.extent) {
                 return UIImage(cgImage: cg)
             }
         }
-
-        return image
+        
+        fatalError("❌ cgImage 생성 실패: 썸네일용 이미지가 Metal과 호환되지 않음")
     }
 }
 
@@ -108,17 +135,30 @@ class EditorViewModel: EditorViewBindable, ObservableObject {
     }
 
     func generateThumbnails(baseImage: UIImage) {
+        
+        print("🧪 이미지 정보: \(baseImage)")
+        if let cg = baseImage.cgImage {
+            print("🧪 width: \(cg.width), height: \(cg.height)")
+            print("🧪 bitsPerComponent: \(cg.bitsPerComponent)")
+            print("🧪 alphaInfo: \(cg.alphaInfo.rawValue)")
+            print("🧪 colorSpace: \(String(describing: cg.colorSpace))")
+        } else {
+            print("🛑 cgImage 없음")
+        }
+        
+        let normalized = baseImage.normalized().toSRGBCompatible()
         Task {
             for filter in filterList {
                 if filterThumbnails[filter.id] != nil { continue }
 
                 if filter.id == "original" {
-                    filterThumbnails[filter.id] = baseImage.resize(to: CGSize(width: 60, height: 60))
+                    filterThumbnails[filter.id] = normalized.resize(to: CGSize(width: 60, height: 60))
                     continue
                 }
 
                 do {
-                    let resized = baseImage.resize(to: CGSize(width: 60, height: 60))
+                    let resized = normalized.resize(to: CGSize(width: 40, height: 40))
+                    print("✅ 썸네일 cgImage 존재 여부 (\(filter.name)): \(resized.cgImage != nil)")
                     let result = try await applyFilterUseCase.execute(filter: filter, image: resized)
                     filterThumbnails[filter.id] = result
                     print("✅ 썸네일 생성 성공: \(filter.name)")
