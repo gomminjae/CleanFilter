@@ -103,7 +103,7 @@ class EditorViewModel: EditorViewBindable, ObservableObject {
                     pendingImage = nil
                 }
             } catch {
-                print("❌ 필터 로딩 실패: \(error)")
+                print("필터 로딩 실패: \(error)")
             }
         }
     }
@@ -185,7 +185,14 @@ class EditorViewModel: EditorViewBindable, ObservableObject {
     }
 
     func saveToPhotoLibrary() {
-        guard let image = filteredImage else { return }
+        guard let image = filteredImage else {
+            self.saveErrorMessage = "저장할 이미지가 없습니다."
+            return
+        }
+        if filteredImage == originalImage {
+            self.saveErrorMessage = "원본 이미지 입니다."
+            return
+        }
 
         let status = PHPhotoLibrary.authorizationStatus(for: .readWrite)
 

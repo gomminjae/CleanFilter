@@ -30,8 +30,8 @@ struct EditorView: View {
                 }) {
                     Image(systemName: "square.and.arrow.up.fill")
                         .font(.title2)
-                                    .foregroundColor(.white)
-                                    .padding(10)
+                        .foregroundColor(.white)
+                        .padding(20)
                 }
             }
             Group {
@@ -70,10 +70,10 @@ struct EditorView: View {
 
                                 Text(filter.name)
                                     .font(.caption2)
-                                    .foregroundColor(viewModel.selectedFilter?.id == filter.id ? .blue : .primary)
+                                    .foregroundColor(viewModel.selectedFilter?.id == filter.id ? .purple : .primary)
                             }
                             .padding(4)
-                            .background(viewModel.selectedFilter?.id == filter.id ? Color.blue.opacity(0.15) : Color.clear)
+                            //.background(viewModel.selectedFilter?.id == filter.id ? Color.purple.opacity(0.15) : Color.clear)
                             .cornerRadius(8)
                             .scaleEffect(viewModel.selectedFilter?.id == filter.id ? 1.15 : 1.0)
                             .onTapGesture {
@@ -123,14 +123,15 @@ struct EditorView: View {
                     HStack(spacing: 12) {
                         // 이미지 추가 버튼
                         PhotosPicker(selection: $selectedItem, matching: .images) {
-                            HStack {
+                            VStack {
                                 Image(systemName: "photo.on.rectangle")
+                                    .padding(.bottom, 1)
                                 Text("이미지")
                             }
                             .font(.subheadline)
                             .padding()
                             .frame(maxWidth: .infinity)
-                            .background(Color.blue)
+                            .background(Color.black.opacity(0.3))
                             .foregroundColor(.white)
                             .cornerRadius(12)
                         }
@@ -139,14 +140,15 @@ struct EditorView: View {
                         Button(action: {
                             mode = .editing
                         }) {
-                            HStack {
+                            VStack {
                                 Image(systemName: "camera.filters")
+                                    .padding(.bottom, 1)
                                 Text("필터")
                             }
                             .font(.subheadline)
                             .padding()
                             .frame(maxWidth: .infinity)
-                            .background(Color.purple)
+                            .background(Color.black.opacity(0.3))
                             .foregroundColor(.white)
                             .cornerRadius(12)
                         }
