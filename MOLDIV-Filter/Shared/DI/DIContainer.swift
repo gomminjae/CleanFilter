@@ -11,13 +11,12 @@ import UIKit
     
 final class DIContainer {
     // MARK: - Shared instances
-    
     private lazy var jsonFilterDataSource: JSONFilterDataSource = {
         JSONFilterDataSource()
     }()
     
     private lazy var metalFilterProcessor: ImageFiltering = {
-        try! FilterProcessor() // 실패 가능성 있다면 throws 처리도 가능
+        try! FilterProcessor() 
     }()!
     
     private lazy var filterRepository: FilterRepository = {

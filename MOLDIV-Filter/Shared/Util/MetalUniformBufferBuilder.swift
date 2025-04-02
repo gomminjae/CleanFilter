@@ -20,7 +20,7 @@ struct MetalUniformBufferBuilder {
     
     static func build(from parameters: [String: Float], shader: String) -> [Float] {
         guard let keys = shaderUniformMap[shader] else {
-            print("⚠️ 해당 셰이더 이름에 대한 uniform key 매핑 없음: \(shader)")
+            print("uniform key 매핑 없음: \(shader)")
             return []
         }
 
